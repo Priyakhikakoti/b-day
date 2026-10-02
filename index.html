@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d1c">
+<title>Arunabh, level up</title>
+<meta name="description" content="A little game made with love, just for you.">
+
+<!-- Open Graph / WhatsApp / Social Preview -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="A game made for you">
+<meta property="og:description" content="A little game made with love, just for you.">
+<meta property="og:image" content="og-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A game made for you">
+<meta name="twitter:description" content="A little game made with love, just for you.">
+<meta name="twitter:image" content="og-preview.png">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0d1c;
+  --bg-gradient: radial-gradient(1200px 700px at 50% -10%, #1b2046 0%, var(--bg) 65%);
+  --ink: #ece5d8;
+  --dim: #9a97a8;
+  --gold: #d9bf94;
+  --gold-glow: rgba(217, 191, 148, 0.35);
+  --rose: #c9788c;
+  --line: rgba(217, 191, 148, 0.22);
+  --glass: rgba(255, 255, 255, 0.045);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg-gradient);
+  background-color: var(--bg);
+  color: var(--ink);
+  font: 300 16px/1.65 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  position: relative;
+}
+
+/* Subtle editorial grain texture overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: .01em;
+  line-height: 1.15;
+}
+
+h1 { font-size: clamp(38px, 9vw, 76px); }
+h2 { font-size: clamp(28px, 5.5vw, 40px); }
+h3 { font-size: clamp(22px, 4.5vw, 30px); }
+
+em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* Boyfriend Meter & Top HUD */
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  padding: calc(10px + env(safe-area-inset-top)) 18px 12px;
+  background: linear-gradient(#0a0d1cf5 70%, #0a0d1c00);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+}
+
+#hud .row {
+  max-width: 720px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+#tier {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  color: var(--gold);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Hidden hearts collection tracker in HUD */
+.htrack {
+  font-size: 12.5px;
+  color: var(--rose);
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 14px;
+  background: rgba(201, 120, 140, 0.08);
+  border: 1px solid rgba(201, 120, 140, 0.22);
+  transition: transform .3s, background .3s;
+}
+
+.htrack.pop {
+  animation: heartPop .45s ease;
+  background: rgba(201, 120, 140, 0.25);
+  border-color: var(--rose);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+
+.bar {
+  height: 6px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  max-width: 720px;
+  margin: 6px auto 0;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 9px;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  transition: width .9s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 0 14px var(--gold);
+}
+
+#stats {
+  max-width: 720px;
+  margin: 8px auto 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+#stats .bar {
+  height: 3px;
+  margin: 3px 0 0;
+}
+
+#hud.hot {
+  animation: shake .5s 3;
+}
+#hud.hot .bar i {
+  box-shadow: 0 0 24px #fff, 0 0 14px var(--gold);
+}
+#hud.low #tier {
+  animation: fl .4s 2;
+}
+
+@keyframes shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes fl {
+  50% { opacity: .2; }
+}
+
+/* Stage & Container */
+#stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(90px + env(safe-area-inset-top)) 18px calc(50px + env(safe-area-inset-bottom));
+  animation: in .6s ease both;
+  position: relative;
+  z-index: 5;
+}
+
+#stage.noHud {
+  padding-top: calc(30px + env(safe-area-inset-top));
+}
+
+@keyframes in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wrap {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  position: relative;
+}
+
+/* Glassmorphism Card */
+.card {
+  position: relative;
+  text-align: left;
+  padding: clamp(24px, 5vw, 34px) clamp(18px, 4vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px -30px #000, 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.tag {
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gold);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.say {
+  min-height: 4.8em;
+  margin: 14px 0 18px;
+  font-size: 16.5px;
+  color: #dfdbec;
+  line-height: 1.6;
+}
+
+.ask {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(21px, 4vw, 25px);
+  margin-bottom: 14px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+/* Quiz Options & Buttons */
+.opts {
+  display: grid;
+  gap: 9px;
+}
+
+.opts button, .cta {
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .03);
+  text-align: left;
+  transition: all .22s cubic-bezier(.2, .8, .2, 1);
+  font-size: 15px;
+}
+
+.opts button:hover, .cta:hover {
+  border-color: var(--gold);
+  background: rgba(217, 191, 148, .1);
+  transform: translateY(-1px);
+}
+
+.opts button.ok {
+  border-color: #9fd4a8;
+  background: rgba(159, 212, 168, .15);
+  color: #c9eed0;
+}
+
+.opts button.no {
+  border-color: var(--rose);
+  background: rgba(201, 120, 140, .15);
+  animation: shake .35s;
+}
+
+.cta {
+  display: inline-block;
+  text-align: center;
+  background: var(--gold);
+  color: #16120b;
+  font-weight: 500;
+  border: 0;
+  padding: 14px 34px;
+  border-radius: 40px;
+  margin-top: 20px;
+  box-shadow: 0 8px 24px -6px rgba(217, 191, 148, .3);
+}
+
+.cta:hover {
+  background: #ecd6af;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(217, 191, 148, .45);
+}
+
+.cta.secondary {
+  background: rgba(217, 191, 148, 0.12);
+  color: var(--gold);
+  border: 1px solid var(--line);
+  margin-left: 8px;
+  box-shadow: none;
+}
+
+.cta.secondary:hover {
+  background: rgba(217, 191, 148, 0.22);
+  border-color: var(--gold);
+}
+
+.hide { display: none !important; }
+
+/* Image Frame & Crops */
+.pic {
+  width: 100%;
+  height: clamp(210px, 32vw, 270px);
+  border-radius: 14px;
+  margin: 14px 0 10px;
+  background-image: var(--ph);
+  background-repeat: no-repeat;
+  background-size: var(--z);
+  background-position: var(--p);
+  border: 1px solid rgba(217, 191, 148, 0.18);
+  filter: blur(14px) saturate(.6);
+  transition: filter 1.4s ease;
+}
+
+.pic.clear {
+  filter: none;
+}
+
+#fb {
+  min-height: 1.6em;
+  font-size: 13.5px;
+  color: var(--rose);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+/* Hidden Hearts */
+.heart {
+  position: absolute;
+  font-size: 16px;
+  color: var(--rose);
+  opacity: .22;
+  transition: transform .3s, opacity .3s;
+  padding: 8px;
+  z-index: 10;
+  line-height: 1;
+}
+
+.heart:hover {
+  opacity: 1;
+  transform: scale(1.6);
+}
+
+.heart.got {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.1);
+}
+
+/* Couple & Portrait Visuals */
+.cover {
+  width: min(65vw, 290px);
+  aspect-ratio: 2 / 3;
+  margin: 0 auto 22px;
+  border-radius: 20px;
+  background-image: var(--ph);
+  background-position: center;
+  background-size: cover;
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px -20px #000, 0 0 50px -10px var(--gold-glow);
+}
+
+.spk {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 14px 0 16px;
+}
+
+.spk .say {
+  margin: 0;
+  flex: 1;
+}
+
+.pf {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 1.5px solid var(--gold);
+  background: #161a33;
+  flex: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.pf.sm { width: 32px; height: 32px; border-width: 1px; }
+.pf.lg { width: 72px; height: 72px; border-width: 2px; }
+
+.pl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Boss Fight HP Bar */
+.hp-box {
+  margin: 12px 0 18px;
+}
+
+.hp-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--dim);
+  margin-bottom: 5px;
+}
+
+.hp {
+  height: 9px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .08);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .4);
+}
+
+.hp i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d85f78, var(--rose));
+  width: 100%;
+  transition: width .6s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 0 12px var(--rose);
+}
+
+/* Best Boyfriend Award Plaque */
+.plaque {
+  position: relative;
+  padding: clamp(30px, 6vw, 44px) clamp(20px, 5vw, 32px);
+  border-radius: 24px;
+  border: 1.5px solid var(--gold);
+  background: linear-gradient(160deg, rgba(217, 191, 148, .18), rgba(255, 255, 255, .03) 60%, rgba(201, 120, 140, .08));
+  box-shadow: 0 0 0 5px rgba(217, 191, 148, .08), 0 0 40px -10px var(--gold-glow), 0 40px 90px -30px #000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  text-align: center;
+}
+
+.award-duo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 4vw, 24px);
+  margin: 20px 0 18px;
+}
+
+.char-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.char-name {
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: .04em;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+}
+
+.award-heart {
+  font-size: 24px;
+  color: var(--rose);
+  animation: pulse 1.8s ease-in-out infinite;
+  text-shadow: 0 0 14px rgba(201, 120, 140, .6);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.22); }
+}
+
+.award-recipient {
+  margin: 6px 0 14px;
+  font-size: 15px;
+  color: var(--dim);
+  line-height: 1.35;
+}
+
+.award-recipient em {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(28px, 6vw, 36px);
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.award-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* Coupon & Scratch-off Card */
+.coupon-wrapper {
+  position: relative;
+  margin: 18px 0 6px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px dashed var(--gold);
+  background: rgba(217, 191, 148, .05);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, .5);
+}
+
+.coupon-box {
+  padding: 24px 20px;
+  text-align: center;
+  position: relative;
+}
+
+.coupon-badge {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #17120a;
+  background: var(--gold);
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.coupon-sub {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 14px;
+  font-style: italic;
+}
+
+#scratchCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* Love Letter & Envelope */
+.env {
+  width: min(85vw, 270px);
+  height: 175px;
+  margin: 32px auto;
+  position: relative;
+  cursor: pointer;
+  transition: transform .4s cubic-bezier(.2, .8, .2, 1);
+}
+
+.env:hover {
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+.env .b {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#e9dcc3, #d6c4a2);
+  border-radius: 8px;
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, .7);
+}
+
+.env .f {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 104px;
+  background: #e1d0af;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform .8s cubic-bezier(.4, 0, .2, 1);
+  z-index: 2;
+}
+
+.env .s {
+  position: absolute;
+  left: 50%;
+  top: 82px;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
+  border-radius: 50%;
+  background: radial-gradient(#d86a85, #8a2a44);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+  transition: opacity .4s;
+}
+
+.env.open .f {
+  transform: rotateX(180deg);
+}
+
+.env.open .s {
+  opacity: 0;
+}
+
+.paper {
+  text-align: left;
+  color: #2b2218;
+  background: #f4ecdc;
+  border-radius: 8px;
+  padding: clamp(26px, 5vw, 38px) clamp(22px, 5vw, 32px);
+  box-shadow: 0 30px 70px -20px #000, 0 0 0 1px rgba(0, 0, 0, 0.08);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(19px, 3.8vw, 22px);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  position: relative;
+}
+
+.sign {
+  font-style: italic;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 26px;
+  color: var(--gold);
+  margin-top: 16px;
+  text-align: left;
+}
+
+.end-duo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 22px 0 10px;
+}
+
+.end-duo .heart-sep {
+  color: var(--rose);
+  font-size: 16px;
+}
+
+/* Toast & Mute Controls */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translate(-50%, 40px);
+  opacity: 0;
+  padding: 11px 22px;
+  border-radius: 40px;
+  background: #161a33;
+  border: 1px solid var(--gold);
+  color: var(--ink);
+  font-size: 14px;
+  transition: transform .4s cubic-bezier(.2, .8, .2, 1), opacity .4s;
+  z-index: 50;
+  white-space: nowrap;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .6);
+  pointer-events: none;
+}
+
+#toast.on {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+#mute {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 30;
+  font-size: 12.5px;
+  color: var(--dim);
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: rgba(10, 13, 28, .85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all .2s;
+}
+
+#mute:hover {
+  color: var(--ink);
+  border-color: var(--gold);
+}
+
+canvas#cv {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 45;
+}
+
+.sub {
+  color: var(--dim);
+  margin: 14px auto 0;
+  max-width: 440px;
+  line-height: 1.55;
+  font-size: 15px;
+}
+
+.load i {
+  display: block;
+  height: 2px;
+  width: 0;
+  background: var(--gold);
+  margin: 34px auto 0;
+  max-width: 220px;
+  animation: ld 2.4s cubic-bezier(.2, .8, .2, 1) forwards;
+  box-shadow: 0 0 10px var(--gold);
+}
+
+@keyframes ld {
+  to { width: 220px; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 420px) {
+  #stats {
+    gap: 6px;
+    font-size: 10px;
+  }
+  .opts button, .cta {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  #hud .row {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 340px) {
+  #stats {
+    gap: 4px;
+    font-size: 9px;
+  }
+  #tier {
+    font-size: 17px;
+  }
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div class="row">
+    <span class="pl">
+      <img class="pf sm" id="hudp" alt="Player avatar" onerror="this.remove()">
+      <span id="tier">Acceptable</span>
+    </span>
+    <span class="htrack" id="htrack" title="Hidden hearts found">♥ <b id="hcount">0</b>/5</span>
+    <span>Boyfriend meter <b id="pct">0</b>%</span>
+  </div>
+  <div class="bar"><i id="mfill"></i></div>
+  <div id="stats"></div>
+</div>
+
+<main id="stage"></main>
+
+<button id="mute" aria-label="Toggle sound and ambient music box">Sound on</button>
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="cv"></canvas>
+
+<script>
+/* ============ CONFIGURATION ============ */
+const C = {
+  him: "Arunabh",
+  her: "Prii",
+  nick: "baby",
+  photo: "couple.jpg",                 // primary couple artwork
+  himImg: "him.png",                   // Arunabh character illustration
+  herImg: "her.png",                   // Prii character illustration
+
+  levels: [
+    {
+      pos: "36% 45%",
+      zoom: "215%",
+      title: "The text",
+      date: "November",
+      memory: "One little text in November. That is where this whole game starts, baby.",
+      q: "When did I fall in love with you?",
+      o: ["October", "November", "December", "January"],
+      a: 2 // December
+    },
+    {
+      pos: "64% 43%",
+      zoom: "215%",
+      title: "My love language",
+      date: "Level 2",
+      memory: "Some people say it out loud. I say it by staying close.",
+      q: "What is my love language?",
+      o: ["Words of affirmation", "Gifts", "Acts of service", "Physical touch and quality time"],
+      a: 3 // Physical touch and quality time
+    },
+    {
+      pos: "46% 56%",
+      zoom: "205%",
+      title: "My comfort food",
+      date: "Level 3",
+      memory: "Some loves are measured in fried chicken and shared fries.",
+      q: "What is my favourite food place?",
+      o: ["KFC", "McDonald's", "Domino's", "Burger King"],
+      a: 0 // KFC
+    },
+    {
+      pos: "45% 58%",
+      zoom: "165%",
+      title: "My comfort show",
+      date: "Level 4",
+      memory: "Blanket, snacks, a good series, and you next to me.",
+      q: "What is my favourite series?",
+      o: ["Gilmore Girls", "P.S. To All the Boys I’ve Ever Loved", "Emily in Paris", "Friends"],
+      a: 1 // P.S. To All the Boys I’ve Ever Loved
+    },
+    {
+      pos: "50% 43%",
+      zoom: "185%",
+      title: "My colour right now",
+      date: "Level 5",
+      memory: "Soft, warm, and a little bit golden. Like everything with you.",
+      q: "What is my current favourite colour?",
+      o: ["Lavender", "Baby pink", "Sage green", "Butter yellow"],
+      a: 3 // Butter yellow
+    }
+  ],
+
+  // Boss Fight questions based ONLY on verified relationship facts
+  boss: [
+    {
+      q: "Who sent the very first text on that unforgettable day in November?",
+      o: ["Arunabh", "Prii", "A group chat mishap", "An accidental dial"],
+      a: 0,
+      memory: "November was when you took the very first step, baby."
+    },
+    {
+      q: "In Prii's heart, what role will you always hold?",
+      o: ["My safe place, my person", "Just a weekend movie buddy", "On-call Uber driver", "Occasional snack provider"],
+      a: 0,
+      memory: "More than just a boyfriend—you've become my safe place."
+    },
+    {
+      q: "How much does Prii love baby?",
+      o: ["Endlessly, baby", "A standard amount", "Only when you share fries", "Subject to monthly review"],
+      a: 0,
+      memory: "One text. One November day. And somehow, it led me to you."
+    }
+  ],
+
+  award: "For showing up, staying by my side, and being my safe place.",
+  secret: "You found every hidden heart. You notice the little things, which is exactly why I love you.",
+  coupon: "One KFC date, my treat. You pick the movie, I pick the seat next to you.",
+
+  letter: `To my love,
+
+Happy Boyfriend’s Day, baby.
+
+Sometimes I think about that day in November when you texted me first, and I wonder if you even knew how much that one little text would change my life.
+
+From that day onwards, somehow everything became a little more beautiful. You came into my life and brought with you so much love, comfort, laughter, and happiness. And today, I genuinely can't imagine my life without you in it.
+
+Thank you for always showing up for me. For staying by my side when I needed you the most, for listening to me, putting up with me, and loving me even on the days when I’m not the easiest person to love. 🥹
+
+I’m so grateful for you—not just because you’re my boyfriend, but because you’ve become my safe place, my person, and such a beautiful part of my life.
+
+I hope you always know how deeply I love you and how thankful I am that November brought you to me.
+
+One text. One November day. And somehow, it led me to you.
+
+I love you endlessly, baby.`,
+  sign: "Prii"
+};
+/* ============ END CONFIGURATION ============ */
+
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+const S = { m: 0, st: [0, 0, 0, 0], h: 0, ach: {}, mute: false };
+const STATS = ['Hugs', 'Humor', 'Snacks', 'Loyalty'];
+const TIERS = [[0, 'Acceptable'], [25, 'Dependable'], [50, 'Dangerously charming'], [80, 'Certified legend']];
+
+/* Web Audio System (iOS & Android friendly) */
+let AC = null;
+function initAudio() {
+  if (!AC) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) AC = new AudioCtx();
+  }
+  if (AC && AC.state === 'suspended') {
+    AC.resume();
+  }
+}
+window.addEventListener('pointerdown', initAudio, { once: true });
+window.addEventListener('keydown', initAudio, { once: true });
+
+function snd(f = 520, d = .14, t = 'sine', v = .05) {
+  if (S.mute || !AC) return;
+  try {
+    if (AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = t;
+    o.frequency.value = f;
+    g.gain.value = v;
+    g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d);
+    o.connect(g);
+    g.connect(AC.destination);
+    o.start();
+    o.stop(AC.currentTime + d);
+  } catch (e) {}
+}
+
+const chime = () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => snd(f, .3), i * 95));
+
+/* Gentle Ambient Music Box BGM */
+const BGM = {
+  active: false,
+  step: 0,
+  timer: null,
+  chords: [
+    [523.25, 659.25, 783.99, 1046.50], // C major arpeggio
+    [392.00, 493.88, 587.33, 783.99],  // G major
+    [440.00, 523.25, 659.25, 880.00],  // A minor
+    [349.23, 440.00, 523.25, 698.46],  // F major
+    [523.25, 659.25, 783.99, 1046.50], // C major
+    [329.63, 392.00, 493.88, 659.25],  // E minor
+    [349.23, 440.00, 523.25, 698.46],  // F major
+    [392.00, 493.88, 587.33, 783.99]   // G major
+  ],
+  playTone(freq) {
+    if (S.mute || !AC || AC.state !== 'running') return;
+    try {
+      const osc = AC.createOscillator();
+      const gain = AC.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, AC.currentTime);
+      
+      const now = AC.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.026, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
+      
+      osc.connect(gain);
+      gain.connect(AC.destination);
+      osc.start(now);
+      osc.stop(now + 1.3);
+    } catch(e) {}
+  },
+  tick() {
+    if (!BGM.active || S.mute) return;
+    const chordIdx = Math.floor(BGM.step / 4) % BGM.chords.length;
+    const noteIdx = BGM.step % 4;
+    const chord = BGM.chords[chordIdx];
+    const freq = chord[noteIdx];
+    
+    BGM.playTone(freq);
+    BGM.step++;
+    BGM.timer = setTimeout(BGM.tick, 440);
+  },
+  start() {
+    if (BGM.active || S.mute) return;
+    BGM.active = true;
+    BGM.tick();
+  },
+  stop() {
+    BGM.active = false;
+    clearTimeout(BGM.timer);
+  }
+};
+
+$('#mute').onclick = e => {
+  initAudio();
+  S.mute = !S.mute;
+  e.target.textContent = S.mute ? 'Sound off' : 'Sound on';
+  if (S.mute) {
+    BGM.stop();
+  } else {
+    BGM.start();
+  }
+};
+
+let tt;
+function toast(t) {
+  const e = $('#toast');
+  e.textContent = t;
+  e.classList.add('on');
+  clearTimeout(tt);
+  tt = setTimeout(() => e.classList.remove('on'), 2600);
+}
+
+function ach(k, t) {
+  if (S.ach[k]) return;
+  S.ach[k] = 1;
+  toast('Achievement unlocked: ' + t);
+  chime();
+}
+
+$('#stats').innerHTML = STATS.map((s, i) => `<div>${s}<div class="bar"><i id="s${i}"></i></div></div>`).join('');
+
+function updateHeartsHUD() {
+  const hc = $('#hcount');
+  if (hc) hc.textContent = S.h;
+  const ht = $('#htrack');
+  if (ht) {
+    ht.classList.remove('pop');
+    void ht.offsetWidth;
+    ht.classList.add('pop');
+  }
+}
+
+function meter(add, stat) {
+  S.m = Math.min(100, S.m + add);
+  if (stat != null) S.st[stat % 4] = Math.min(100, S.st[stat % 4] + add * 2.2);
+  $('#mfill').style.width = S.m + '%';
+  $('#pct').textContent = Math.round(S.m);
+  $('#tier').textContent = [...TIERS].reverse().find(t => S.m >= t[0])[1];
+  S.st.forEach((v, i) => {
+    const el = $('#s' + i);
+    if (el) el.style.width = v + '%';
+  });
+  if (S.m >= 100) {
+    $('#hud').classList.add('hot');
+  }
+}
+
+function glitch() {
+  const h = $('#hud');
+  h.classList.remove('low');
+  void h.offsetWidth;
+  h.classList.add('low');
+  snd(180, .25, 'square', .04);
+}
+
+let tw;
+function type(el, txt, done, st = 1) {
+  clearInterval(tw);
+  el.textContent = '';
+  let i = 0;
+  tw = setInterval(() => {
+    i += st;
+    el.textContent = txt.slice(0, i);
+    if (i % 3 < st) snd(900, .02, 'triangle', .012);
+    if (i >= txt.length) {
+      clearInterval(tw);
+      done && done();
+    }
+  }, 22);
+}
+
+function go(html, hud = true, after) {
+  stage.className = hud ? '' : 'noHud';
+  $('#hud').style.display = hud ? 'block' : 'none';
+  stage.style.animation = 'none';
+  void stage.offsetWidth;
+  stage.style.animation = '';
+  stage.innerHTML = html;
+  window.scrollTo(0, 0);
+  after && after();
+}
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+function heartHTML() {
+  return `<button class="heart" style="left:${rnd(6, 88)}%;top:${rnd(8, 92)}%" aria-label="Hidden heart">&#9829;</button>`;
+}
+
+function bindHeart() {
+  document.querySelectorAll('.heart').forEach(b => {
+    b.onclick = () => {
+      if (b.classList.contains('got')) return;
+      b.classList.add('got');
+      S.h++;
+      updateHeartsHUD();
+      chime();
+      toast('Hidden heart found (' + S.h + '/5)');
+      ach('h' + S.h, 'Eagle eyes');
+    };
+  });
+}
+
+/* ============ SCREENS ============ */
+
+// 1. Loading screen
+function intro() {
+  go(`
+    <div class="wrap load">
+      <h1>Level <em>Up</em></h1>
+      <p class="sub">Boyfriend edition. Loading ${C.him}'s save file.</p>
+      <i></i>
+    </div>
+  `, false);
+  setTimeout(select, 2600);
+}
+
+// 2. Start Screen
+function select() {
+  go(`
+    <div class="wrap">
+      <div class="cover" style="--ph:url('${C.photo}')"></div>
+      <h2>${C.him} &amp; ${C.her}</h2>
+      <p class="sub">Player 1 and Player 2. One save file. Ready when you are.</p>
+      <button class="cta" id="go">Press start</button>
+    </div>
+  `, false, () => {
+    $('#go').onclick = () => {
+      initAudio();
+      BGM.start();
+      chime();
+      meter(0);
+      updateHeartsHUD();
+      level(0);
+    };
+  });
+}
+
+// 3. Five Levels
+function level(i) {
+  const L = C.levels[i];
+  go(`
+    <div class="wrap">
+      <div class="card">
+        ${heartHTML()}
+        <div class="tag">Level ${i + 1} of ${C.levels.length}, ${L.date}</div>
+        <h2>${L.title}</h2>
+        <div class="pic" id="pic" style="--ph:url('${C.photo}');--z:${L.zoom};--p:${L.pos}"></div>
+        <div class="spk">
+          <img class="pf" src="${C.herImg}" alt="${C.her}" onerror="this.remove()">
+          <p class="say" id="say"></p>
+        </div>
+        <div id="q" class="hide">
+          <p class="ask">${L.q}</p>
+          <div class="opts">
+            ${L.o.map((t, k) => `<button data-k="${k}">${t}</button>`).join('')}
+          </div>
+        </div>
+        <div id="fb"></div>
+        <div id="nx"></div>
+      </div>
+    </div>
+  `, true, () => {
+    bindHeart();
+    type($('#say'), L.memory, () => {
+      const q = $('#q');
+      if (q) q.classList.remove('hide');
+    });
+
+    let tries = 0, done = false;
+    document.querySelectorAll('.opts button').forEach(b => {
+      b.onclick = () => {
+        if (done) return;
+        if (+b.dataset.k === L.a) {
+          done = true;
+          b.classList.add('ok');
+          chime();
+          $('#fb').textContent = '';
+          const pic = $('#pic');
+          if (pic) pic.classList.add('clear');
+          meter(12, i);
+          if (tries >= 3) ach('t3', 'Persistent');
+          if (i === 0 && !tries) ach('f', 'Flawless start');
+
+          if (i < C.levels.length - 1) {
+            $('#nx').innerHTML = `<button class="cta" id="n">Next level</button>`;
+            $('#n').onclick = () => level(i + 1);
+          } else {
+            $('#nx').innerHTML = `<button class="cta" id="n">Enter Boss Fight</button>`;
+            $('#n').onclick = () => boss(0);
+          }
+        } else {
+          tries++;
+          b.classList.add('no');
+          glitch();
+          const msgs = [
+            `Critical hit. ${C.her} is offended.`,
+            `Nope. Check the sidekick hint: think romantic.`,
+            `Wrong again. The meter is judging you.`
+          ];
+          $('#fb').textContent = msgs[Math.min(tries - 1, 2)];
+        }
+      };
+    });
+  });
+}
+
+// 4. Boss Fight
+function boss(qIdx) {
+  const B = C.boss[qIdx];
+  const hpPercent = Math.round(((3 - qIdx) / 3) * 100);
+
+  go(`
+    <div class="wrap">
+      <div class="card">
+        ${heartHTML()}
+        <div class="tag">Final Boss Trial • Phase ${qIdx + 1} of 3</div>
+        <h2>The Ultimate Boyfriend Test</h2>
+        <div class="hp-box">
+          <div class="hp-info"><span>Boss HP</span><span id="hpval">${hpPercent}%</span></div>
+          <div class="hp"><i id="hpfill" style="width:${hpPercent}%"></i></div>
+        </div>
+        <div class="spk">
+          <img class="pf" src="${C.herImg}" alt="${C.her}" onerror="this.remove()">
+          <p class="say" id="say"></p>
+        </div>
+        <div id="q" class="hide">
+          <p class="ask">${B.q}</p>
+          <div class="opts">
+            ${B.o.map((t, k) => `<button data-k="${k}">${t}</button>`).join('')}
+          </div>
+        </div>
+        <div id="fb"></div>
+        <div id="nx"></div>
+      </div>
+    </div>
+  `, true, () => {
+    bindHeart();
+    type($('#say'), B.memory, () => {
+      const q = $('#q');
+      if (q) q.classList.remove('hide');
+    });
+
+    let tries = 0, done = false;
+    document.querySelectorAll('.opts button').forEach(b => {
+      b.onclick = () => {
+        if (done) return;
+        if (+b.dataset.k === B.a) {
+          done = true;
+          b.classList.add('ok');
+          chime();
+          $('#fb').textContent = '';
+          const newHp = Math.round(((2 - qIdx) / 3) * 100);
+          $('#hpfill').style.width = newHp + '%';
+          $('#hpval').textContent = newHp + '%';
+          meter(8, qIdx);
+
+          if (qIdx < 2) {
+            $('#nx').innerHTML = `<button class="cta" id="n">Next Boss Phase</button>`;
+            $('#n').onclick = () => boss(qIdx + 1);
+          } else {
+            confetti();
+            ach('b', 'Boss Defeated');
+            $('#nx').innerHTML = `<button class="cta" id="n">Collect your award</button>`;
+            $('#n').onclick = () => award();
+          }
+        } else {
+          tries++;
+          b.classList.add('no');
+          glitch();
+          const msgs = [
+            `Boss defended! Arunabh, you definitely know this one—try again!`,
+            `Critical counter! Think with your heart, baby.`,
+            `The Boss is tough, but ${C.her} believes in you!`
+          ];
+          $('#fb').textContent = msgs[Math.min(tries - 1, 2)];
+        }
+      };
+    });
+  });
+}
+
+// 5. Best Boyfriend Award & Keepsake Card Export
+function award() {
+  chime();
+  ach('a', 'Best boyfriend');
+  go(`
+    <div class="wrap">
+      <div class="plaque">
+        <div class="tag">The jury has decided • Official Certificate</div>
+        <h1>Best <em>Boyfriend</em> Award</h1>
+        <div class="cover" style="--ph:url('${C.photo}');margin:22px auto 16px"></div>
+        <div class="award-duo">
+          <div class="char-item">
+            <img class="pf lg" src="${C.herImg}" alt="${C.her}" onerror="this.remove()">
+            <span class="char-name">${C.her}</span>
+          </div>
+          <div class="award-heart">&#9829;</div>
+          <div class="char-item">
+            <img class="pf lg" src="${C.himImg}" alt="${C.him}" onerror="this.remove()">
+            <span class="char-name">${C.him}</span>
+          </div>
+        </div>
+        <div class="award-recipient">
+          Presented with all my love to<br>
+          <em>${C.him}</em>
+        </div>
+        <p class="sub">${C.award}</p>
+        <div class="award-actions">
+          <button class="cta" id="n">Continue</button>
+          <button class="cta secondary" id="saveCard">📷 Save Keepsake Card</button>
+        </div>
+      </div>
+    </div>
+  `, true, () => {
+    meter(8);
+    confetti();
+    $('#n').onclick = () => S.h >= 3 ? bonus() : power();
+    $('#saveCard').onclick = exportKeepsakeCard;
+  });
+}
+
+// High-Resolution Keepsake Certificate Card Generator
+function exportKeepsakeCard() {
+  toast('Generating your keepsake card...');
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1480;
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient
+  const bgGrad = ctx.createRadialGradient(540, 200, 100, 540, 740, 900);
+  bgGrad.addColorStop(0, '#1c224b');
+  bgGrad.addColorStop(0.65, '#0a0d1c');
+  bgGrad.addColorStop(1, '#060812');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Borders
+  ctx.strokeStyle = 'rgba(217, 191, 148, 0.45)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(40, 40, 1000, 1400);
+
+  ctx.strokeStyle = 'rgba(217, 191, 148, 0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(52, 52, 976, 1376);
+
+  // Ornamental corner lines
+  const cLen = 34;
+  ctx.strokeStyle = '#d9bf94';
+  ctx.lineWidth = 3;
+  [[40,40,1,1], [1040,40,-1,1], [40,1440,1,-1], [1040,1440,-1,-1]].forEach(([x,y,dx,dy]) => {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx*cLen, y);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + dy*cLen);
+    ctx.stroke();
+  });
+
+  // Typography
+  ctx.fillStyle = '#d9bf94';
+  ctx.font = '500 22px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('THE JURY HAS DECIDED • OFFICIAL CERTIFICATE', 540, 130);
+
+  ctx.fillStyle = '#ece5d8';
+  ctx.font = '600 68px "Cormorant Garamond", Georgia, serif';
+  ctx.fillText('Best Boyfriend Award', 540, 215);
+
+  // Load couple image to draw inside frame
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = C.photo;
+  img.onload = () => {
+    // Draw couple artwork in centered frame
+    const fw = 440, fh = 620, fx = 540 - fw/2, fy = 270;
+    
+    // Soft shadow & border
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(fx, fy, fw, fh, 22);
+    ctx.clip();
+    ctx.drawImage(img, fx, fy, fw, fh);
+    ctx.restore();
+
+    ctx.strokeStyle = '#d9bf94';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(fx, fy, fw, fh, 22);
+    ctx.stroke();
+
+    // Recipient & award text
+    ctx.fillStyle = '#9a97a8';
+    ctx.font = '300 28px "DM Sans", sans-serif';
+    ctx.fillText('Presented with all my love to', 540, 960);
+
+    ctx.fillStyle = '#d9bf94';
+    ctx.font = 'italic 600 58px "Cormorant Garamond", Georgia, serif';
+    ctx.fillText(C.him, 540, 1030);
+
+    ctx.fillStyle = '#ece5d8';
+    ctx.font = '300 24px "DM Sans", sans-serif';
+    ctx.fillText('"' + C.award + '"', 540, 1110);
+
+    // Decorative heart & badge
+    ctx.fillStyle = '#c9788c';
+    ctx.font = '32px sans-serif';
+    ctx.fillText('♥', 540, 1180);
+
+    ctx.fillStyle = '#9a97a8';
+    ctx.font = '300 20px "DM Sans", sans-serif';
+    ctx.fillText('Player 1 & Player 2 • Valid Forever', 540, 1240);
+
+    ctx.fillStyle = '#d9bf94';
+    ctx.font = 'italic 500 34px "Cormorant Garamond", Georgia, serif';
+    ctx.fillText('Signed with love, ' + C.her, 540, 1320);
+
+    // Trigger download / open
+    const link = document.createElement('a');
+    link.download = `${C.him}_Best_Boyfriend_Award.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('Keepsake Card downloaded!');
+    chime();
+  };
+}
+
+// 6. Secret Bonus Level (Requires >= 3 hearts)
+function bonus() {
+  ach('s', 'Secret level');
+  go(`
+    <div class="wrap">
+      <div class="card">
+        <div class="tag">Secret level unlocked</div>
+        <h2>You found them all</h2>
+        <p class="say" id="say"></p>
+        <button class="cta" id="n">Claim your power-up</button>
+      </div>
+    </div>
+  `, true, () => {
+    type($('#say'), C.secret);
+    $('#n').onclick = power;
+    meter(5);
+  });
+}
+
+// 7. Real-Life Coupon with Interactive Scratch-Off Card
+function power() {
+  chime();
+  go(`
+    <div class="wrap">
+      <div class="card">
+        <div class="tag">Power-up unlocked</div>
+        <h2>A real-life reward</h2>
+        <div class="coupon-wrapper">
+          <div class="coupon-box">
+            <span class="coupon-badge">VIP REWARD</span>
+            <p class="say" id="say" style="min-height:3.5em;margin:0;color:#f4ecdc;font-size:18px;font-family:'Cormorant Garamond',serif"></p>
+            <p class="coupon-sub">Valid forever • Redeemable only with Prii</p>
+          </div>
+          <canvas id="scratchCanvas"></canvas>
+        </div>
+        <div id="cAct" class="hide">
+          <button class="cta" id="n">Read the final message</button>
+        </div>
+      </div>
+    </div>
+  `, true, () => {
+    $('#say').textContent = C.coupon;
+    const canvas = $('#scratchCanvas');
+    initScratchCard(canvas, () => {
+      chime();
+      confetti();
+      toast('Voucher unlocked!');
+      $('#cAct').classList.remove('hide');
+      $('#n').onclick = letter;
+    });
+  });
+}
+
+// Interactive Gold Scratch-Off Card
+function initScratchCard(canvas, onRevealed) {
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+
+  // Shimmering metallic gold scratch surface
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#c7a977');
+  grad.addColorStop(0.3, '#ebd8b6');
+  grad.addColorStop(0.7, '#c29d68');
+  grad.addColorStop(1, '#9b7642');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Border & Hint
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+
+  ctx.fillStyle = '#17120a';
+  ctx.font = '500 13.5px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('✨ Scratch to reveal your reward ✨', canvas.width / 2, canvas.height / 2);
+
+  let isScratching = false;
+  let scratchedCount = 0;
+  let isDone = false;
+
+  function scratchAt(x, y) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 24, 0, Math.PI * 2);
+    ctx.fill();
+    snd(700, .015, 'triangle', .008);
+
+    scratchedCount++;
+    if (scratchedCount % 12 === 0 && !isDone) {
+      checkPercent();
+    }
+  }
+
+  function checkPercent() {
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let clear = 0;
+    for (let i = 3; i < data.length; i += 16) {
+      if (data[i] === 0) clear++;
+    }
+    if (clear / (data.length / 16) > 0.38) {
+      isDone = true;
+      canvas.style.transition = 'opacity 0.6s ease';
+      canvas.style.opacity = '0';
+      setTimeout(() => {
+        canvas.remove();
+        onRevealed && onRevealed();
+      }, 600);
+    }
+  }
+
+  function getCoords(e) {
+    const r = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: cx - r.left, y: cy - r.top };
+  }
+
+  canvas.addEventListener('mousedown', e => { isScratching = true; const p = getCoords(e); scratchAt(p.x, p.y); });
+  window.addEventListener('mousemove', e => { if (isScratching) { const p = getCoords(e); scratchAt(p.x, p.y); } });
+  window.addEventListener('mouseup', () => { isScratching = false; });
+
+  canvas.addEventListener('touchstart', e => { isScratching = true; const p = getCoords(e); scratchAt(p.x, p.y); }, { passive: true });
+  canvas.addEventListener('touchmove', e => { if (isScratching) { const p = getCoords(e); scratchAt(p.x, p.y); } }, { passive: true });
+  window.addEventListener('touchend', () => { isScratching = false; });
+}
+
+// 8. Love Letter & Ending
+function letter() {
+  meter(100);
+  go(`
+    <div class="wrap">
+      <h2>One last thing</h2>
+      <div class="env" id="env" role="button" tabindex="0" aria-label="Open letter">
+        <div class="b"></div>
+        <div class="f"></div>
+        <div class="s">&#9829;</div>
+      </div>
+      <p class="sub" id="hint">Tap the envelope</p>
+      <div id="lt"></div>
+    </div>
+  `, false, () => {
+    const open = () => {
+      const e = $('#env');
+      if (e.classList.contains('open')) return;
+      e.classList.add('open');
+      chime();
+      $('#hint').remove();
+      setTimeout(() => {
+        e.style.display = 'none';
+        $('#lt').innerHTML = `
+          <div class="paper" id="p"></div>
+          <div class="sign" id="sg"></div>
+          <div id="end"></div>
+        `;
+        type($('#p'), C.letter, () => {
+          $('#sg').textContent = C.sign;
+          confetti();
+          ach('l', 'Read every word');
+          $('#end').innerHTML = `
+            <div class="end-duo">
+              <img class="pf sm" src="${C.herImg}" alt="${C.her}" onerror="this.remove()">
+              <span class="heart-sep">&#9829;</span>
+              <img class="pf sm" src="${C.himImg}" alt="${C.him}" onerror="this.remove()">
+            </div>
+            <div class="cover" style="--ph:url('${C.photo}');margin-top:20px"></div>
+            <p class="sub">Meter: 100%. Player 2 will always be with you.</p>
+            <div class="award-actions" style="margin-top:20px">
+              <button class="cta" id="again">New game+</button>
+              <button class="cta secondary" id="saveCard2">📷 Save Keepsake Card</button>
+            </div>
+          `;
+          $('#saveCard2').onclick = exportKeepsakeCard;
+          $('#again').onclick = () => {
+            S.m = 0;
+            S.st = [0, 0, 0, 0];
+            S.h = 0;
+            S.ach = {};
+            $('#hud').classList.remove('hot', 'low');
+            meter(0);
+            updateHeartsHUD();
+            const cv = $('#cv');
+            if (cv) {
+              const ctx = cv.getContext('2d');
+              ctx.clearRect(0, 0, cv.width, cv.height);
+            }
+            toast('New game+ started');
+            select();
+          };
+        }, 3);
+      }, 900);
+    };
+
+    $('#env').onclick = open;
+    $('#env').onkeydown = e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        open();
+      }
+    };
+  });
+}
+
+/* Confetti particles */
+function confetti() {
+  const c = $('#cv'), x = c.getContext('2d');
+  c.width = innerWidth;
+  c.height = innerHeight;
+  const col = ['#d9bf94', '#c9788c', '#ece5d8', '#8a9bd6'];
+  const P = Array.from({ length: 140 }, () => ({
+    x: rnd(0, c.width),
+    y: rnd(-c.height, 0),
+    r: rnd(3, 7),
+    v: rnd(1.5, 3.8),
+    w: rnd(-1, 1),
+    c: col[~~rnd(0, col.length)]
+  }));
+  let n = 0;
+  (function f() {
+    x.clearRect(0, 0, c.width, c.height);
+    P.forEach(p => {
+      p.y += p.v;
+      p.x += p.w;
+      x.fillStyle = p.c;
+      x.fillRect(p.x, p.y, p.r, p.r * 1.6);
+    });
+    if (++n < 380) requestAnimationFrame(f);
+    else x.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+// Initial avatar setup
+const hp = $('#hudp');
+if (hp) hp.src = C.himImg;
+
+// Start game flow
+intro();
+</script>
+</body>
+</html>
