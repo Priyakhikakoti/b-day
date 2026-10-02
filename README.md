@@ -10,6 +10,3 @@
 - **Love Letter Keepsake**: Virtual envelope with wax seal, typewriter letter reveal, and confetti.
 - **Save Keepsake Card**: Direct high-resolution certificate generation for camera rolls.
 - **Gentle Ambient Music Box BGM**: Synthesized romantic lullaby via Web Audio API.
-
-## Live Website
-[https://arunabh-level-up.surge.sh](https://arunabh-level-up.surge.sh)
